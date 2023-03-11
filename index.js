@@ -2,6 +2,8 @@ const Koa = require("koa");
 const fs = require("fs");
 const path = require("path");
 const app = new Koa();
+const compilerSfc = require("@vue/compiler-sfc");
+const compilerDom = require("@vue/compiler-dom");
 
 app.use(async (ctx) => {
   const { url, query } = ctx.request;
@@ -32,6 +34,28 @@ app.use(async (ctx) => {
     const ret = fs.readFileSync(p, "utf-8");
     ctx.type = "application/javascript";
     ctx.body = rewriteImport(ret);
+  } else if (url.indexOf(".vue") > -1) {
+    // support SFC component
+    // step 1. *.vue => template script (compiler-sfc)
+    // /*.vue?type=template
+    const p = path.resolve(__dirname, url.split("?")[0].slice(1));
+    const { descriptor } = compilerSfc.parse(fs.readFileSync(p, "utf-8"));
+    if (!query.type) {
+      ctx.type = "application/javascript";
+      ctx.body = `${rewriteImport(
+        descriptor.script.content.replace("export default", "const __script = ")
+      )}
+  import { render as __render } from "${url}?type=template"
+  __script.render = __render;
+  export default __script;
+  `;
+    } else {
+      // step 2. template => render func (compiler-dom)
+      const template = descriptor.template;
+      const render = compilerDom.compile(template.content, { mode: "module" });
+      ctx.type = "application/javascript";
+      ctx.body = rewriteImport(render.code);
+    }
   }
 
   // vue => node_modules/***

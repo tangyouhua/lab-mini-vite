@@ -2,10 +2,11 @@
 // console.log("vite ..." + str);
 
 import { createApp, h } from "vue";
-const app = {
-  render() {
-    // <div><div>Hello Vite</div></div>
-    return h("div", null, [h("div", null, String("Hello Vite"))]);
-  },
-};
-createApp(app).mount("#app");
+import App from "./App.vue";
+// const app = {
+//   render() {
+//     // <div><div>Hello Vite</div></div>
+//     return h("div", null, [h("div", null, String("Hello Vite"))]);
+//   },
+// };
+createApp(App).mount("#app");
