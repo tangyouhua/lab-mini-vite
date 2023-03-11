@@ -3,6 +3,7 @@
 
 import { createApp, h } from "vue";
 import App from "./App.vue";
+import "./index.css";
 // const app = {
 //   render() {
 //     // <div><div>Hello Vite</div></div>

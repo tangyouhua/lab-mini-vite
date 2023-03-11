@@ -56,6 +56,21 @@ app.use(async (ctx) => {
       ctx.type = "application/javascript";
       ctx.body = rewriteImport(render.code);
     }
+  } else if (url.endsWith(".css")) {
+    // css => js, add <style>
+    const p = path.resolve(__dirname, url.slice(1));
+    const file = fs.readFileSync(p, "utf-8");
+
+    const content = `
+    const css = "${file.replace(/\n/g, "")}";
+    let link = document.createElement('style');
+    link.setAttribute('type', 'text/css');
+    document.head.appendChild(link);
+    link.innerHTML = css;
+    export default css;
+    `;
+    ctx.type = "application/javascript";
+    ctx.body = content;
   }
 
   // vue => node_modules/***
